@@ -12,7 +12,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ${UPLOAD_DIR}:/uploads
+      - ./uploads:/uploads
     depends_on:
       - mysql
     restart: always
