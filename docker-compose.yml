@@ -1,0 +1,17 @@
+# docker-compose.yml
+version: "3.8"
+
+services:
+  app:
+    image: outline-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: outline-app
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ${UPLOAD_DIR}:/uploads
+    restart: always
