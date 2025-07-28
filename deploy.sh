@@ -1,18 +1,25 @@
 #!/bin/bash
 
-echo "==== 🚀 Deploying to EC2 ===="
+# 1. SSH 키 생성
+echo "$PRIVATE_KEY" > outline-key.pem
+chmod 600 outline-key.pem
 
-# EC2로 SSH 접속하여 아래 명령 실행
-ssh -o StrictHostKeyChecking=no -i outline-keypair.pem ubuntu@13.124.229.252 << 'EOF'
-  cd ~/app
+# 2. EC2 접속 및 배포 명령 실행
+ssh -o StrictHostKeyChecking=no -i outline-key.pem $USER@$HOST << 'EOF'
+  cd ~/outline
 
-  echo "📦 Pull latest code"
+  # 최신 코드 가져오기
   git pull origin main
 
-  echo "⚙️ Build Docker image"
-  ./gradlew clean build
+  # Gradle 빌드
+  ./gradlew clean build -x test
 
-  echo "🐳 Restart Docker Compose"
-  docker-compose down
-  docker-compose up -d --build
+  # Docker 재시작
+  sudo docker-compose down
+  sudo docker-compose up -d --build
+
+  exit
 EOF
+
+# 3. 사용한 키 삭제
+rm -f outline-key.pem
