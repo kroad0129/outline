@@ -12,7 +12,7 @@ ssh -o StrictHostKeyChecking=no -i outline-key.pem $USER@$HOST << 'EOF'
   git pull origin main
 
   # Gradle 빌드
-  ./gradlew build -x test
+  ./gradlew clean build -x test
 
   # Docker 재시작
   sudo docker-compose down
