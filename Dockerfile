@@ -1,10 +1,12 @@
-FROM openjdk:17-jdk-slim
-VOLUME /tmp
+# Dockerfile
 
-# 실제 jar 이름으로 정확히 지정
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+# JAR 파일 복사 (GitHub Actions에서 EC2에 복사된 최신 JAR)
 COPY build/libs/outline-0.0.1-SNAPSHOT.jar app.jar
 
-# 환경 변수에서 profile 사용
+# 환경 변수 설정
 ENV SPRING_PROFILES_ACTIVE=prod
 
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
