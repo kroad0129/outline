@@ -24,14 +24,17 @@ jobs:
       - name: Build .jar (excluding tests)
         run: ./gradlew clean build -x test
 
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
       - name: Create SSH Key file
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > outline-key.pem
           chmod 600 outline-key.pem
 
-      - name: Upload .jar to EC2 manually
+      - name: Upload .jar to EC2 with rsync
         run: |
-          scp -i outline-key.pem -o StrictHostKeyChecking=no ./build/libs/outline-0.0.1-SNAPSHOT.jar ubuntu@${{ secrets.EC2_HOST }}:~/outline/build/libs/
+          rsync -avz -e "ssh -i outline-key.pem -o StrictHostKeyChecking=no" ./build/libs/outline-0.0.1-SNAPSHOT.jar ubuntu@${{ secrets.EC2_HOST }}:~/outline/build/libs/
 
       - name: Restart docker-compose on EC2
         run: |
