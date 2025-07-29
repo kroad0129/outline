@@ -1,6 +1,7 @@
 package com.outline.outline.like;
 
 import com.outline.outline.like.dto.LikeRequest;
+import com.outline.outline.notification.NotificationService;
 import com.outline.outline.post.Post;
 import com.outline.outline.post.PostRepository;
 import com.outline.outline.user.User;
@@ -16,6 +17,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public void addLike(LikeRequest request) {
@@ -30,6 +32,11 @@ public class LikeService {
 
         likeRepository.save(new Like(user, post));
         post.setLikeCount(post.getLikeCount() + 1);
+
+        //공감수 100 달성시 알람
+        if (post.getLikeCount() == 100) {
+            notificationService.notifyAllUsersForPost(post.getId());
+        }
     }
 
     @Transactional
