@@ -13,6 +13,7 @@ public class PostSummaryResponse {
     private String content;
     private String imageUrl;
     private int likeCount;
+    private int status;
     private LocalDateTime createdAt;
     private boolean liked;
 }

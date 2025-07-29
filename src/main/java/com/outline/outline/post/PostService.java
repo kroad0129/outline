@@ -52,6 +52,7 @@ public class PostService {
                     post.getContent(),
                     post.getImageUrl(),
                     post.getLikeCount(),
+                    post.getStatus(),
                     post.getCreatedAt(),
                     liked
             );
@@ -91,6 +92,7 @@ public class PostService {
                 post.getContent(),
                 post.getImageUrl(),
                 post.getLikeCount(),
+                post.getStatus(),
                 post.getCreatedAt(),
                 likeRepository.existsByUserAndPost(user, post)
         )).toList();
@@ -109,6 +111,7 @@ public class PostService {
                     post.getContent(),
                     post.getImageUrl(),
                     post.getLikeCount(),
+                    post.getStatus(),
                     post.getCreatedAt(),
                     true
             );
