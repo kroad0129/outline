@@ -22,5 +22,5 @@ public class Notification {
 
     private String message;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
