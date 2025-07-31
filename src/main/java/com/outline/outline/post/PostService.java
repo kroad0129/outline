@@ -121,4 +121,17 @@ public class PostService {
             );
         }).toList();
     }
+
+    public record CategoryStatusCount(String bigCategory, Long count) {}
+
+    public List<CategoryStatusCount> getUnresolvedCountsByCategory(String bigCategory) {
+        if (bigCategory == null || bigCategory.isBlank()) {
+            return postRepository.countUnresolvedByAllBigCategory().stream()
+                    .map(row -> new CategoryStatusCount((String) row[0], ((Number) row[1]).longValue()))
+                    .toList();
+        } else {
+            Long count = postRepository.countUnresolvedByBigCategory(bigCategory);
+            return List.of(new CategoryStatusCount(bigCategory, count));
+        }
+    }
 }

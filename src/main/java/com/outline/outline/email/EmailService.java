@@ -28,7 +28,7 @@ public class EmailService {
                 .build()) {
 
             String subject = "[알림] 공감수 100개 달성 제보 요청";
-            String bodyText = "제보 \"" + postTitle + "\" 이(가) 공감수 100개를 달성하여 관련 기관에 제보 요청되엇습니다.";
+            String bodyText = "제보 \"" + postTitle + "\" 이(가) 공감수 100개를 달성하여 관련 기관에 제보 요청되었습니다.";
 
             SendEmailRequest request = SendEmailRequest.builder()
                     .destination(Destination.builder()

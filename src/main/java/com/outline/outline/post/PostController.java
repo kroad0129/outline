@@ -57,4 +57,14 @@ public class PostController {
     public List<PostSummaryResponse> getLikedPosts(@RequestParam Long userId) {
         return postService.getLikedPosts(userId);
     }
+
+    @GetMapping("/stats/unresolved")
+    @Operation(summary = "미해결 제보 통계", description = "빅카테고리별 status=0 게시글 수를 조회합니다.")
+    public List<PostService.CategoryStatusCount> getUnresolvedStats(
+            @RequestParam(required = false) String bigCategory
+    ) {
+        return postService.getUnresolvedCountsByCategory(bigCategory);
+    }
+
+
 }
