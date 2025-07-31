@@ -1,10 +1,9 @@
-package com.outline.outline.like;
+package com.outline.outline.solve;
 
-import com.outline.outline.email.EmailService;
-import com.outline.outline.like.dto.LikeRequest;
 import com.outline.outline.notification.NotificationService;
 import com.outline.outline.post.Post;
 import com.outline.outline.post.PostRepository;
+import com.outline.outline.solve.dto.SolveRequest;
 import com.outline.outline.user.User;
 import com.outline.outline.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -15,57 +14,54 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LikeService {
+public class SolveService {
 
-    private final LikeRepository likeRepository;
+    private final SolveRepository solveRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
-    private final EmailService emailService;
-
 
     @Transactional
-    public void addLike(LikeRequest request) {
+    public void addSolve(SolveRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        if (likeRepository.existsByUserAndPost(user, post)) {
-            throw new IllegalStateException("이미 공감한 게시글입니다.");
+        if (solveRepository.existsByUserAndPost(user, post)) {
+            throw new IllegalStateException("이미 해결표시 했습니다.");
         }
 
-        likeRepository.save(new Like(user, post));
-        post.setLikeCount(post.getLikeCount() + 1);
+        solveRepository.save(new Solve(user, post));
+        post.setSolveCount(post.getSolveCount() + 1);
 
-
-        if (post.getLikeCount() == 100) {
-            notificationService.notifyUsersForPost(post.getId()); //공감수 100 달성시 알람
-            emailService.sendLikeNotificationEmail(post.getTitle()); //이메일 전송
+        if (post.getSolveCount() == 5) {
+            List<User> solvers = solveRepository.findUsersByPost(post);
+            notificationService.notifySolvedUsers(post, solvers);
         }
     }
 
     @Transactional
-    public void removeLike(LikeRequest request) {
+    public void removeSolve(SolveRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        Like like = likeRepository.findByUserAndPost(user, post)
-                .orElseThrow(() -> new IllegalStateException("공감하지 않은 게시글입니다."));
+        Solve solve = solveRepository.findByUserAndPost(user, post)
+                .orElseThrow(() -> new IllegalStateException("해결표시 하지 않은 게시글입니다."));
 
-        likeRepository.delete(like);
-        post.setLikeCount(post.getLikeCount() - 1);
+        solveRepository.delete(solve);
+        post.setSolveCount(post.getSolveCount() - 1);
     }
 
-    public boolean hasLiked(Long userId, Long postId) {
+    public boolean hasSolved(Long userId, Long postId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        return likeRepository.existsByUserAndPost(user, post);
+        return solveRepository.existsByUserAndPost(user, post);
     }
-
 }
+

@@ -25,4 +25,14 @@ public class AuthController {
         User user = authService.login(request.getUsername());
         return new LoginResponse(user.getId(), user.getUsername());
     }
+
+    @GetMapping("/me/{userId}")
+    @Operation(
+            summary = "유저 정보 조회 (마이페이지)",
+            description = "userId를 기반으로 username 등 유저 정보를 조회합니다."
+    )
+    public LoginResponse me(@PathVariable Long userId) {
+        User user = authService.getUserById(userId);
+        return new LoginResponse(user.getId(), user.getUsername());
+    }
 }

@@ -36,6 +36,9 @@ public class Post {
     private int likeCount = 0;
 
     @Column(nullable = false)
+    private int solveCount = 0;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)

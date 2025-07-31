@@ -14,6 +14,7 @@ public class PostDetailResponse {
     private String imageUrl;
     private String locationCode;
     private int likeCount;
+    private int solveCount;
     private int status;
     private LocalDateTime createdAt;
     private String username; // 작성자 이름

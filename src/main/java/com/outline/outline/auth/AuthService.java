@@ -22,4 +22,10 @@ public class AuthService {
                                 .build()
                 ));
     }
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+    }
+
 }
