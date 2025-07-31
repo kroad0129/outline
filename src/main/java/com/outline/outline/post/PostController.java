@@ -26,7 +26,7 @@ public class PostController {
     }
 
     @GetMapping
-    @Operation(summary = "게시글 전체 조회", description = "검색어, 지역 필터, 정렬조건, 사용자 ID를 기반으로 게시글을 조회합니다.")
+    @Operation(summary = "게시글 전체 조회", description = "정렬조건(latest, like), 검색어, 지역 필터, 사용자 ID를 기반으로 게시글을 조회합니다.")
     public List<PostSummaryResponse> getPosts(
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(required = false) String search,
@@ -59,7 +59,7 @@ public class PostController {
     }
 
     @GetMapping("/stats/unresolved")
-    @Operation(summary = "미해결 제보 통계", description = "빅카테고리별 status=0 게시글 수를 조회합니다.")
+    @Operation(summary = "미해결 제보 통계", description = "빅카테고리별 status=0 게시글 수를 조회합니다. (빈칸- 모든 빅카테고리 조회)")
     public List<PostService.CategoryStatusCount> getUnresolvedStats(
             @RequestParam(required = false) String bigCategory
     ) {
