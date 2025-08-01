@@ -31,6 +31,8 @@ public class PostService {
                 .content(request.getContent())
                 .imageUrl(request.getImageUrl())
                 .locationCode(request.getLocationCode())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
                 .status(request.getStatus())
                 .build();
 
@@ -51,6 +53,9 @@ public class PostService {
                     post.getTitle(),
                     post.getContent(),
                     post.getImageUrl(),
+                    post.getLocationCode(),
+                    post.getLatitude(),
+                    post.getLongitude(),
                     post.getLikeCount(),
                     post.getSolveCount(),
                     post.getStatus(),
@@ -74,6 +79,8 @@ public class PostService {
                 post.getContent(),
                 post.getImageUrl(),
                 post.getLocationCode(),
+                post.getLatitude(),
+                post.getLongitude(),
                 post.getLikeCount(),
                 post.getSolveCount(),
                 post.getStatus(),
@@ -93,6 +100,9 @@ public class PostService {
                 post.getTitle(),
                 post.getContent(),
                 post.getImageUrl(),
+                post.getLocationCode(),
+                post.getLatitude(),
+                post.getLongitude(),
                 post.getLikeCount(),
                 post.getSolveCount(),
                 post.getStatus(),
@@ -113,6 +123,9 @@ public class PostService {
                     post.getTitle(),
                     post.getContent(),
                     post.getImageUrl(),
+                    post.getLocationCode(),
+                    post.getLatitude(),
+                    post.getLongitude(),
                     post.getLikeCount(),
                     post.getSolveCount(),
                     post.getStatus(),

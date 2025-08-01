@@ -12,6 +12,9 @@ public class PostSummaryResponse {
     private String title;
     private String content;
     private String imageUrl;
+    private String locationCode;
+    private Double latitude;
+    private Double longitude;
     private int likeCount;
     private int solveCount;
     private int status;

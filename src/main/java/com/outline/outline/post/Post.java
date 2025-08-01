@@ -32,6 +32,12 @@ public class Post {
     @Column(length = 10, nullable = false)
     private String locationCode;  // 예: "1-1"
 
+    @Column(nullable = true)
+    private Double latitude;
+
+    @Column(nullable = true)
+    private Double longitude;
+
     @Column(nullable = false)
     private int likeCount = 0;
 
@@ -42,7 +48,7 @@ public class Post {
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
-    private int status;  // 0: 해결안됨, 1: 진행중, 2: 해결됨
+    private int status;  // 0: 진행중, 1: 제보됨, 2: 해결됨
 
     @PrePersist
     protected void onCreate() {
