@@ -26,7 +26,7 @@ public class Post {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(length = 255)
+    @Column(length = 500)
     private String imageUrl;
 
     @Column(length = 10, nullable = false)
