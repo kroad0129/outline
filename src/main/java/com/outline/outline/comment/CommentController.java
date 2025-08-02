@@ -1,6 +1,6 @@
 package com.outline.outline.comment;
 
-import com.outline.outline.comment.dto.CommentRequestDto;
+import com.outline.outline.comment.dto.CommentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<Void> writeComment(
             @PathVariable Long postId,
-            @RequestBody CommentRequestDto request
+            @RequestBody CommentRequest request
     ) {
         commentService.writeComment(postId, request);
         return ResponseEntity.ok().build();
