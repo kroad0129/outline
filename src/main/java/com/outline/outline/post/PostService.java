@@ -31,10 +31,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         String regionName = request.getRegionName(); // ex: "강원특별자치도 양양군"
-        String locationCode = RegionCode.NAME_TO_CODE.get(regionName);
-        if (locationCode == null) {
-            throw new IllegalArgumentException("해당 지역명을 코드로 변환할 수 없습니다: " + regionName);
-        }
+        String locationCode = RegionCode.NAME_TO_CODE.getOrDefault(regionName, "UNKNOWN");
 
         Post post = Post.builder()
                 .user(user)

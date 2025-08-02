@@ -30,7 +30,7 @@ public class Post {
     @Column(name = "image_url", length = 255)
     private String imageUrl;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private String locationCode;  // 예: "1-1"
 
     @Column(nullable = true)
