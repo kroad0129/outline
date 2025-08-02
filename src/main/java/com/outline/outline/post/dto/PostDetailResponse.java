@@ -12,7 +12,7 @@ public class PostDetailResponse {
     private Long id;
     private String title;
     private String content;
-    private List<String> imageUrl;
+    private List<String> imageUrls;
     private String locationCode;
     private String locationName;
     private Double latitude;
