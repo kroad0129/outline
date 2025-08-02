@@ -49,14 +49,12 @@ public class OpenAiSummaryService {
                 .block();
 
         try {
-            // 응답에서 요약된 JSON 추출
             String contentText = objectMapper.readTree(response)
                     .path("choices").get(0)
                     .path("message")
                     .path("content")
                     .asText();
 
-            // JSON 문자열을 파싱
             return objectMapper.readValue(contentText, SummaryResult.class);
         } catch (Exception e) {
             log.error("OpenAI 요약 실패", e);

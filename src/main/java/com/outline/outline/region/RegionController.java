@@ -20,7 +20,6 @@ public class RegionController {
     private final RegionService regionService;
     private final UserRepository userRepository;
 
-    // 관심지역 추가
     @PostMapping
     public ResponseEntity<String> addRegion(@RequestBody RegionRequest request) {
         User user = getUserFromId(request.getUserId());
@@ -28,7 +27,6 @@ public class RegionController {
         return ResponseEntity.ok("관심지역 등록 완료");
     }
 
-    // 관심지역 삭제
     @DeleteMapping("/{userId}/{locationCode}")
     public ResponseEntity<String> removeRegion(@PathVariable Long userId, @PathVariable String locationCode) {
         User user = getUserFromId(userId);
@@ -36,7 +34,6 @@ public class RegionController {
         return ResponseEntity.ok("관심지역 삭제 완료");
     }
 
-    // 관심지역 조회
     @GetMapping("/{userId}")
     public ResponseEntity<List<RegionResponse>> getUserRegions(@PathVariable Long userId) {
         User user = getUserFromId(userId);

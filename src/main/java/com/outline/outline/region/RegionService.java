@@ -16,7 +16,6 @@ public class RegionService {
     private final RegionRepository regionRepository;
 
     public void addRegion(User user, RegionRequest request) {
-        // 중복 방지
         if (regionRepository.existsByUserAndLocationCode(user, request.getLocationCode())) {
             throw new IllegalArgumentException("이미 등록된 관심지역입니다.");
         }

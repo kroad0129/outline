@@ -31,7 +31,7 @@ public class FileController {
             File saveFile = new File(uploadDir, filename);
             try {
                 file.transferTo(saveFile);
-                resultUrls.add("/uploads/" + filename); // 상대 경로
+                resultUrls.add("/uploads/" + filename);
             } catch (IOException e) {
                 throw new RuntimeException("파일 업로드 실패: " + filename, e);
             }

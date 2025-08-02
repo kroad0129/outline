@@ -30,7 +30,7 @@ public class PostService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        String regionName = request.getRegionName(); // ex: "강원특별자치도 양양군"
+        String regionName = request.getRegionName();
         String locationCode = RegionCode.NAME_TO_CODE.getOrDefault(regionName, "UNKNOWN");
 
         Post post = Post.builder()
@@ -46,7 +46,6 @@ public class PostService {
 
         Post saved = postRepository.save(post);
 
-        // 🔔 관심 지역 사용자에게 공지 생성
         List<User> interestedUsers = regionRepository.findAllByLocationCode(locationCode);
         List<Notification> notifications = interestedUsers.stream()
                 .map(u -> Notification.builder()
@@ -56,7 +55,6 @@ public class PostService {
                 .toList();
         notificationRepository.saveAll(notifications);
 
-        // 🤖 AI 요약 저장
         SummaryResult summary = openAiSummaryService.summarize(request.getTitle(), request.getContent());
         PostSummary postSummary = PostSummary.builder()
                 .post(saved)

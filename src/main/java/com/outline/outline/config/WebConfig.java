@@ -9,7 +9,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Docker 컨테이너 내부에서 /uploads 디렉토리를 정적 자원으로 제공
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:/uploads/");
     }
