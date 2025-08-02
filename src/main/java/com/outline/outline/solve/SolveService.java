@@ -36,7 +36,7 @@ public class SolveService {
         post.setSolveCount(post.getSolveCount() + 1);
 
         if (post.getSolveCount() == 5) {
-            post.setStatus(2);
+            post.setStatus(1);
 
             List<User> solvers = solveRepository.findUsersByPost(post);
             notificationService.notifySolvedUsers(post, solvers);
