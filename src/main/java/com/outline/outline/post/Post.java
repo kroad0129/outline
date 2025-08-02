@@ -27,10 +27,8 @@ public class Post {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @ElementCollection
-    @CollectionTable(name = "post_images", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "image_url")
-    private List<String> imageUrl;
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 
     @Column(length = 10, nullable = false)
     private String locationCode;  // 예: "1-1"
