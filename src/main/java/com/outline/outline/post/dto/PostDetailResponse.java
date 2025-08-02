@@ -14,6 +14,7 @@ public class PostDetailResponse {
     private String content;
     private List<String> imageUrl;
     private String locationCode;
+    private String locationName;
     private Double latitude;
     private Double longitude;
     private int likeCount;

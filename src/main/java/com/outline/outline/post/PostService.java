@@ -5,6 +5,7 @@ import com.outline.outline.like.LikeRepository;
 import com.outline.outline.notification.Notification;
 import com.outline.outline.notification.NotificationRepository;
 import com.outline.outline.post.dto.*;
+import com.outline.outline.region.RegionCode;
 import com.outline.outline.region.RegionRepository;
 import com.outline.outline.user.User;
 import com.outline.outline.user.UserRepository;
@@ -29,12 +30,18 @@ public class PostService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        String regionName = request.getRegionName(); // ex: "강원특별자치도 양양군"
+        String locationCode = RegionCode.NAME_TO_CODE.get(regionName);
+        if (locationCode == null) {
+            throw new IllegalArgumentException("해당 지역명을 코드로 변환할 수 없습니다: " + regionName);
+        }
+
         Post post = Post.builder()
                 .user(user)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .imageUrl(request.getImageUrl())
-                .locationCode(request.getLocationCode())
+                .locationCode(locationCode)
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .status(request.getStatus())
@@ -42,18 +49,17 @@ public class PostService {
 
         Post saved = postRepository.save(post);
 
-        // 🔹 관심 지역 사용자에게 공지 생성
-        String locationCode = post.getLocationCode();
+        // 🔔 관심 지역 사용자에게 공지 생성
         List<User> interestedUsers = regionRepository.findAllByLocationCode(locationCode);
         List<Notification> notifications = interestedUsers.stream()
                 .map(u -> Notification.builder()
                         .user(u)
-                        .message("(" + locationCode + ")지역에 새로운 제보가 등록되었습니다: " + post.getTitle())
+                        .message("(" + locationCode + ") 지역에 새로운 제보가 등록되었습니다: " + post.getTitle())
                         .build())
                 .toList();
         notificationRepository.saveAll(notifications);
 
-        // 🔹 AI 요약 저장
+        // 🤖 AI 요약 저장
         SummaryResult summary = openAiSummaryService.summarize(request.getTitle(), request.getContent());
         PostSummary postSummary = PostSummary.builder()
                 .post(saved)
@@ -87,6 +93,7 @@ public class PostService {
         return posts.stream().map(post -> {
             boolean liked = likeRepository.existsByUserAndPost(user, post);
             PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+            String locationName = RegionCode.CODE_TO_NAME.get(post.getLocationCode());
 
             return new PostSummaryResponse(
                     post.getId(),
@@ -94,6 +101,7 @@ public class PostService {
                     summary != null ? summary.getSummarizedContent() : post.getContent(),
                     post.getImageUrl(),
                     post.getLocationCode(),
+                    locationName,
                     post.getLatitude(),
                     post.getLongitude(),
                     post.getLikeCount(),
@@ -103,7 +111,6 @@ public class PostService {
                     liked
             );
         }).toList();
-
     }
 
     public PostDetailResponse getPostDetail(Long postId, Long userId) {
@@ -113,8 +120,8 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
         boolean liked = likeRepository.existsByUserAndPost(user, post);
-
         PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+        String locationName = RegionCode.CODE_TO_NAME.get(post.getLocationCode());
 
         return new PostDetailResponse(
                 post.getId(),
@@ -122,6 +129,7 @@ public class PostService {
                 summary != null ? summary.getSummarizedContent() : post.getContent(),
                 post.getImageUrl(),
                 post.getLocationCode(),
+                locationName,
                 post.getLatitude(),
                 post.getLongitude(),
                 post.getLikeCount(),
@@ -131,7 +139,6 @@ public class PostService {
                 post.getUser().getUsername(),
                 liked
         );
-
     }
 
     public List<PostSummaryResponse> getMyPosts(Long userId) {
@@ -141,12 +148,15 @@ public class PostService {
         List<Post> posts = postRepository.findByUser(user);
         return posts.stream().map(post -> {
             PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+            String locationName = RegionCode.CODE_TO_NAME.get(post.getLocationCode());
+
             return new PostSummaryResponse(
                     post.getId(),
                     summary != null ? summary.getSummarizedTitle() : post.getTitle(),
                     summary != null ? summary.getSummarizedContent() : post.getContent(),
                     post.getImageUrl(),
                     post.getLocationCode(),
+                    locationName,
                     post.getLatitude(),
                     post.getLongitude(),
                     post.getLikeCount(),
@@ -156,7 +166,6 @@ public class PostService {
                     likeRepository.existsByUserAndPost(user, post)
             );
         }).toList();
-
     }
 
     public List<PostSummaryResponse> getLikedPosts(Long userId) {
@@ -167,12 +176,15 @@ public class PostService {
         return likes.stream().map(like -> {
             Post post = like.getPost();
             PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+            String locationName = RegionCode.CODE_TO_NAME.get(post.getLocationCode());
+
             return new PostSummaryResponse(
                     post.getId(),
                     summary != null ? summary.getSummarizedTitle() : post.getTitle(),
                     summary != null ? summary.getSummarizedContent() : post.getContent(),
                     post.getImageUrl(),
                     post.getLocationCode(),
+                    locationName,
                     post.getLatitude(),
                     post.getLongitude(),
                     post.getLikeCount(),
@@ -182,7 +194,6 @@ public class PostService {
                     true
             );
         }).toList();
-
     }
 
     public record CategoryStatusCount(String bigCategory, Long count) {}

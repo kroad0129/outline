@@ -25,4 +25,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     WHERE status = 0 AND location_code LIKE CONCAT(:bigCategory, '-%')
 """, nativeQuery = true)
     Long countUnresolvedByBigCategory(@Param("bigCategory") String bigCategory);
+
 }
