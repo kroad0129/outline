@@ -2,7 +2,10 @@ package com.outline.outline.post;
 
 import com.outline.outline.like.Like;
 import com.outline.outline.like.LikeRepository;
+import com.outline.outline.notification.Notification;
+import com.outline.outline.notification.NotificationRepository;
 import com.outline.outline.post.dto.*;
+import com.outline.outline.region.RegionRepository;
 import com.outline.outline.user.User;
 import com.outline.outline.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,8 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final OpenAiSummaryService openAiSummaryService;
     private final PostSummaryRepository postSummaryRepository;
+    private final RegionRepository regionRepository;
+    private final NotificationRepository notificationRepository;
 
     public PostCreateResponse createPost(PostCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -37,11 +42,19 @@ public class PostService {
 
         Post saved = postRepository.save(post);
 
-        // AI 요약
-        SummaryResult summary = openAiSummaryService.summarize(
-                request.getTitle(), request.getContent()
-        );
+        // 🔹 관심 지역 사용자에게 공지 생성
+        String locationCode = post.getLocationCode();
+        List<User> interestedUsers = regionRepository.findAllByLocationCode(locationCode);
+        List<Notification> notifications = interestedUsers.stream()
+                .map(u -> Notification.builder()
+                        .user(u)
+                        .message("(" + locationCode + ")지역에 새로운 제보가 등록되었습니다: " + post.getTitle())
+                        .build())
+                .toList();
+        notificationRepository.saveAll(notifications);
 
+        // 🔹 AI 요약 저장
+        SummaryResult summary = openAiSummaryService.summarize(request.getTitle(), request.getContent());
         PostSummary postSummary = PostSummary.builder()
                 .post(saved)
                 .summarizedTitle(summary.getSummarizedTitle())
