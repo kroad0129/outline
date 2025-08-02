@@ -86,10 +86,12 @@ public class PostService {
 
         return posts.stream().map(post -> {
             boolean liked = likeRepository.existsByUserAndPost(user, post);
+            PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+
             return new PostSummaryResponse(
                     post.getId(),
-                    post.getTitle(),
-                    post.getContent(),
+                    summary != null ? summary.getSummarizedTitle() : post.getTitle(),
+                    summary != null ? summary.getSummarizedContent() : post.getContent(),
                     post.getImageUrl(),
                     post.getLocationCode(),
                     post.getLatitude(),
@@ -101,6 +103,7 @@ public class PostService {
                     liked
             );
         }).toList();
+
     }
 
     public PostDetailResponse getPostDetail(Long postId, Long userId) {
@@ -111,10 +114,12 @@ public class PostService {
 
         boolean liked = likeRepository.existsByUserAndPost(user, post);
 
+        PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+
         return new PostDetailResponse(
                 post.getId(),
-                post.getTitle(),
-                post.getContent(),
+                summary != null ? summary.getSummarizedTitle() : post.getTitle(),
+                summary != null ? summary.getSummarizedContent() : post.getContent(),
                 post.getImageUrl(),
                 post.getLocationCode(),
                 post.getLatitude(),
@@ -126,6 +131,7 @@ public class PostService {
                 post.getUser().getUsername(),
                 liked
         );
+
     }
 
     public List<PostSummaryResponse> getMyPosts(Long userId) {
@@ -133,20 +139,24 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
         List<Post> posts = postRepository.findByUser(user);
-        return posts.stream().map(post -> new PostSummaryResponse(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getImageUrl(),
-                post.getLocationCode(),
-                post.getLatitude(),
-                post.getLongitude(),
-                post.getLikeCount(),
-                post.getSolveCount(),
-                post.getStatus(),
-                post.getCreatedAt(),
-                likeRepository.existsByUserAndPost(user, post)
-        )).toList();
+        return posts.stream().map(post -> {
+            PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
+            return new PostSummaryResponse(
+                    post.getId(),
+                    summary != null ? summary.getSummarizedTitle() : post.getTitle(),
+                    summary != null ? summary.getSummarizedContent() : post.getContent(),
+                    post.getImageUrl(),
+                    post.getLocationCode(),
+                    post.getLatitude(),
+                    post.getLongitude(),
+                    post.getLikeCount(),
+                    post.getSolveCount(),
+                    post.getStatus(),
+                    post.getCreatedAt(),
+                    likeRepository.existsByUserAndPost(user, post)
+            );
+        }).toList();
+
     }
 
     public List<PostSummaryResponse> getLikedPosts(Long userId) {
@@ -156,10 +166,11 @@ public class PostService {
         List<Like> likes = likeRepository.findByUser(user);
         return likes.stream().map(like -> {
             Post post = like.getPost();
+            PostSummary summary = postSummaryRepository.findByPost(post).orElse(null);
             return new PostSummaryResponse(
                     post.getId(),
-                    post.getTitle(),
-                    post.getContent(),
+                    summary != null ? summary.getSummarizedTitle() : post.getTitle(),
+                    summary != null ? summary.getSummarizedContent() : post.getContent(),
                     post.getImageUrl(),
                     post.getLocationCode(),
                     post.getLatitude(),
@@ -171,6 +182,7 @@ public class PostService {
                     true
             );
         }).toList();
+
     }
 
     public record CategoryStatusCount(String bigCategory, Long count) {}
