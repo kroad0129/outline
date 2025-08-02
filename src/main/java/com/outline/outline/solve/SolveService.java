@@ -36,10 +36,13 @@ public class SolveService {
         post.setSolveCount(post.getSolveCount() + 1);
 
         if (post.getSolveCount() == 5) {
+            post.setStatus(2);
+
             List<User> solvers = solveRepository.findUsersByPost(post);
             notificationService.notifySolvedUsers(post, solvers);
         }
     }
+
 
     @Transactional
     public void removeSolve(SolveRequest request) {
