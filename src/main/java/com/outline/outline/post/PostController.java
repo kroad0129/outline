@@ -1,9 +1,6 @@
 package com.outline.outline.post;
 
-import com.outline.outline.post.dto.PostCreateRequest;
-import com.outline.outline.post.dto.PostCreateResponse;
-import com.outline.outline.post.dto.PostDetailResponse;
-import com.outline.outline.post.dto.PostSummaryResponse;
+import com.outline.outline.post.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +63,10 @@ public class PostController {
         return postService.getUnresolvedCountsByCategory(bigCategory);
     }
 
+    @GetMapping("/{postId}/summary")
+    @Operation(summary = "게시글 요약 조회", description = "AI가 요약한 제목과 내용을 제공합니다")
+    public SummaryResult getPostSummary(@PathVariable Long postId) {
+        return postService.getPostSummary(postId);
+    }
 
 }

@@ -2,10 +2,7 @@ package com.outline.outline.post;
 
 import com.outline.outline.like.Like;
 import com.outline.outline.like.LikeRepository;
-import com.outline.outline.post.dto.PostCreateRequest;
-import com.outline.outline.post.dto.PostCreateResponse;
-import com.outline.outline.post.dto.PostDetailResponse;
-import com.outline.outline.post.dto.PostSummaryResponse;
+import com.outline.outline.post.dto.*;
 import com.outline.outline.user.User;
 import com.outline.outline.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +17,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final OpenAiSummaryService openAiSummaryService;
+    private final PostSummaryRepository postSummaryRepository;
 
+    // ✅ 게시글 등록 시 요약 생성 및 저장
     public PostCreateResponse createPost(PostCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -37,8 +37,37 @@ public class PostService {
                 .build();
 
         Post saved = postRepository.save(post);
+
+        // OpenAI 요약 호출
+        SummaryResult summary = openAiSummaryService.summarize(
+                request.getTitle(), request.getContent()
+        );
+
+        // 요약 결과 저장
+        PostSummary postSummary = PostSummary.builder()
+                .post(saved)
+                .summarizedTitle(summary.getSummarizedTitle())
+                .summarizedContent(summary.getSummarizedContent())
+                .build();
+        postSummaryRepository.save(postSummary);
+
         return new PostCreateResponse(saved.getId());
     }
+
+    // ✅ 요약 조회 API
+    public SummaryResult getPostSummary(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        PostSummary postSummary = postSummaryRepository.findByPost(post)
+                .orElseThrow(() -> new IllegalArgumentException("요약 정보가 존재하지 않습니다."));
+
+        return SummaryResult.builder()
+                .summarizedTitle(postSummary.getSummarizedTitle())
+                .summarizedContent(postSummary.getSummarizedContent())
+                .build();
+    }
+
 
     public List<PostSummaryResponse> getPosts(String sort, String search, String bigCategory, String smallCategory, Long userId) {
         List<Post> posts = postRepository.findByFilters(sort, search, bigCategory, smallCategory);
