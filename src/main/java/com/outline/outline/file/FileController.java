@@ -17,29 +17,28 @@ import java.util.UUID;
 public class FileController {
 
     @PostMapping("/upload")
-    @Operation(summary = "이미지 다중 업로드", description = "여러 이미지를 업로드하고 접근 가능한 URL 목록을 반환합니다.")
-    public List<String> upload(@RequestParam("files") MultipartFile[] files) {
+    @Operation(summary = "이미지 업로드", description = "이미지를 업로드하고 접근 가능한 URL 목록을 반환합니다.")
+    public List<String> upload(@RequestParam("files") List<MultipartFile> files) {
         String uploadDir = System.getProperty("user.dir") + "/uploads";
+        List<String> resultUrls = new ArrayList<>();
+
         File directory = new File(uploadDir);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        List<String> uploadedUrls = new ArrayList<>();
-
         for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                File saveFile = new File(uploadDir, filename);
-                try {
-                    file.transferTo(saveFile);
-                    uploadedUrls.add("/uploads/" + filename);
-                } catch (IOException e) {
-                    throw new RuntimeException("파일 업로드 실패: " + file.getOriginalFilename(), e);
-                }
+            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            File saveFile = new File(uploadDir, filename);
+            try {
+                file.transferTo(saveFile);
+                resultUrls.add("/uploads/" + filename);
+            } catch (IOException e) {
+                throw new RuntimeException("파일 업로드 실패", e);
             }
         }
 
-        return uploadedUrls;
+        return resultUrls;
     }
+
 }
