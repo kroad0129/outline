@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -15,28 +17,29 @@ import java.util.UUID;
 public class FileController {
 
     @PostMapping("/upload")
-    @Operation(summary = "이미지 업로드", description = "이미지를 업로드하고 접근 가능한 URL을 반환합니다.")
-    public String upload(@RequestParam("file") MultipartFile file) {
-        // 프로젝트 루트 기준 경로
+    @Operation(summary = "이미지 다중 업로드", description = "여러 이미지를 업로드하고 접근 가능한 URL 목록을 반환합니다.")
+    public List<String> upload(@RequestParam("files") MultipartFile[] files) {
         String uploadDir = System.getProperty("user.dir") + "/uploads";
-        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-
-        try {
-            // 디렉토리 없으면 생성
-            File directory = new File(uploadDir);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            // 실제 파일 저장
-            File saveFile = new File(uploadDir, filename);
-            file.transferTo(saveFile);
-
-            // 접근 경로 반환
-            return "/uploads/" + filename;
-
-        } catch (IOException e) {
-            throw new RuntimeException("파일 업로드 실패", e);
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
         }
+
+        List<String> uploadedUrls = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                File saveFile = new File(uploadDir, filename);
+                try {
+                    file.transferTo(saveFile);
+                    uploadedUrls.add("/uploads/" + filename);
+                } catch (IOException e) {
+                    throw new RuntimeException("파일 업로드 실패: " + file.getOriginalFilename(), e);
+                }
+            }
+        }
+
+        return uploadedUrls;
     }
 }

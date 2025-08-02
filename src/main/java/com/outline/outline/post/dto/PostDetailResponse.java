@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -11,7 +12,7 @@ public class PostDetailResponse {
     private Long id;
     private String title;
     private String content;
-    private String imageUrl;
+    private List<String> imageUrl;
     private String locationCode;
     private Double latitude;
     private Double longitude;

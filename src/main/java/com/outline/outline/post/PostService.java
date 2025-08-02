@@ -20,7 +20,6 @@ public class PostService {
     private final OpenAiSummaryService openAiSummaryService;
     private final PostSummaryRepository postSummaryRepository;
 
-    // ✅ 게시글 등록 시 요약 생성 및 저장
     public PostCreateResponse createPost(PostCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -38,12 +37,11 @@ public class PostService {
 
         Post saved = postRepository.save(post);
 
-        // OpenAI 요약 호출
+        // AI 요약
         SummaryResult summary = openAiSummaryService.summarize(
                 request.getTitle(), request.getContent()
         );
 
-        // 요약 결과 저장
         PostSummary postSummary = PostSummary.builder()
                 .post(saved)
                 .summarizedTitle(summary.getSummarizedTitle())
@@ -54,7 +52,6 @@ public class PostService {
         return new PostCreateResponse(saved.getId());
     }
 
-    // ✅ 요약 조회 API
     public SummaryResult getPostSummary(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
@@ -67,7 +64,6 @@ public class PostService {
                 .summarizedContent(postSummary.getSummarizedContent())
                 .build();
     }
-
 
     public List<PostSummaryResponse> getPosts(String sort, String search, String bigCategory, String smallCategory, Long userId) {
         List<Post> posts = postRepository.findByFilters(sort, search, bigCategory, smallCategory);
