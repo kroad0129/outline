@@ -7,9 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/files")
@@ -28,17 +26,22 @@ public class FileController {
         }
 
         for (MultipartFile file : files) {
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String ext = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID().toString() + ext;
             File saveFile = new File(uploadDir, filename);
             try {
                 file.transferTo(saveFile);
-                resultUrls.add("/uploads/" + filename);
+                resultUrls.add("/uploads/" + filename); // 상대 경로
             } catch (IOException e) {
-                throw new RuntimeException("파일 업로드 실패", e);
+                throw new RuntimeException("파일 업로드 실패: " + filename, e);
             }
         }
 
         return resultUrls;
     }
 
+    private String getExtension(String filename) {
+        int dotIndex = filename.lastIndexOf('.');
+        return (dotIndex != -1) ? filename.substring(dotIndex) : "";
+    }
 }
