@@ -21,8 +21,10 @@ public class NotificationService {
 
     // 유저의 알림 리스트 반환
     public List<Notification> getUserNotifications(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+        if (!userRepository.existsById(userId)) {
+            return List.of(); // 또는 throw new NotFoundException("사용자가 존재하지 않습니다.");
+        }
+        User user = userRepository.findById(userId).get(); // 안전
         return notificationRepository.findByUser(user);
     }
 
