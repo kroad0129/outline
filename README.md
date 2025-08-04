@@ -40,11 +40,11 @@ AI 기반 요약 기능과 자동 알림 기능을 통해 사용자의 참여와
 ## 주요 기능 스크린샷
 <p align="center">
   <img src="./1.png" width="200"/>
+  <img src="./6.png" width="200"/>
   <img src="./2.png" width="200"/>
   <img src="./3.png" width="200"/>
   <img src="./4.png" width="200"/>
   <img src="./5.png" width="200"/>
-  <img src="./6.png" width="200"/>
 </p>
 
 
