@@ -1,236 +1,139 @@
-﻿# OUTLINE - 실시간 지역 이슈 제보/공감 플랫폼
+# OUTLINE – 실시간 지역 이슈 제보/공감 플랫폼
 
 > Notion: https://enchanting-browser-cb9.notion.site/BE-242d237470108003aac4ce8d1240970a?source=copy_link
 
-## 기능 정의서 (Service Layer 중심)
-
-### 1. 사용자 인증
-
-- **로그인/회원가입**
-    - `AuthService.login(String username)`
-    - ID 존재 여부로 자동 회원가입 처리
-
-- **유저 정보 조회**
-    - `AuthService.getUserById(Long userId)`
-
-
-### 2. 게시글 관리
-
-- **게시글 등록 + 요약 + 알림**
-    - `PostService.createPost(...)`
-    - OpenAI 요약, 관심지역 유저 알림 발송
-
-- **게시글 전체/상세/내 글/공감글 조회**
-    - `PostService.getPosts(...)`
-    - `PostService.getPostDetail(postId, userId)`
-    - `PostService.getMyPosts(userId)`
-    - `PostService.getLikedPosts(userId)`
-
-- **게시글 요약 단건 조회**
-    - `PostService.getPostSummary(postId)`
-
-
-### 3. 공감(Like)
-
-- `LikeService.addLike(...)`
-    - 공감 등록 + 공감수 증가
-    - **100 도달 시 Notification + Email**
-
-- `LikeService.removeLike(...)`
-    - 공감 취소
-
-- `LikeService.hasLiked(...)`
-    - 공감 여부 확인
-
-
-### 4. 해결(Solve)
-
-- `SolveService.addSolve(...)`
-    - 해결 등록 + 해결수 증가
-    - **5 도달 시 Notification 발송 + 상태 변경**
-
-- `SolveService.removeSolve(...)`
-    - 해결 취소
-
-- `SolveService.hasSolved(...)`
-    - 해결 여부 확인
-
-
-### 5. 관심지역(Region)
-
-- `RegionService.addRegion(...)`
-    - 관심 지역 등록 (중복 방지)
-
-- `RegionService.removeRegion(...)`
-    - 관심 지역 삭제
-
-- `RegionService.getUserRegions(...)`
-    - 등록된 관심 지역 목록 조회
-
-
-### 6. 알림(Notification)
-
-- `NotificationService.getUserNotifications(userId)`
-    - 유저 알림 목록 조회
-
-- 게시글 등록 시: 관심지역 유저에게 자동 알림
-- 공감 100 도달 시: 작성자에게 알림
-- 해결 5 도달 시: 해결 유저에게 알림
-
-
-### 7. 외부 연동
-
-- `OpenAiSummaryService.summarize(...)`
-    - 게시글 AI 요약 → PostSummary 저장
-
-- `EmailService.sendLikeNotificationEmail(...)`
-    - 기관 이메일로 SES 전송
+OUTLINE은 지역 사회의 크고 작은 이슈를 누구나 자유롭게 제보하고,  
+다른 사용자들이 공감과 해결을 통해 함께 사회적 가치를 만드는 실시간 참여형 플랫폼입니다.  
+AI 기반 요약 기능과 자동 알림 기능을 통해 사용자의 참여와 문제 해결을 연결합니다.
 
 ---
 
-## ERD 설계
+## 🚀 주요 기능
 
-### 1. `User` – 사용자
+### 사용자 인증
+- ID 기반 로그인 및 자동 회원가입
+- 사용자 정보 조회
 
-| 필드명       | 타입          | 제약조건         | 설명                       |
-|--------------|---------------|------------------|----------------------------|
-| `id`         | BIGINT        | PK, AUTO_INCREMENT | 사용자 고유 ID              |
-| `username`   | VARCHAR(50)   | UNIQUE, NOT NULL | 사용자 입력 아이디 (고유)   |
-| `created_at` | DATETIME      | DEFAULT CURRENT_TIMESTAMP | 가입 일시          |
+### 게시글 등록 & 요약
+- 게시글 등록 시 GPT API를 통한 AI 요약 자동 생성
+- 이미지 업로드, 지역 설정, 상태(해결 여부) 포함
 
+### 게시글 조회
+- 전체, 상세, 내가 쓴 글, 내가 공감한 글 목록 제공
+- 게시글 요약 단건 조회 (카드뉴스용)
 
+### 공감/해결 기능
+- 게시글에 공감/해결 버튼 제공
+- 공감수 100 → 작성자에게 이메일 & 알림 전송
+- 해결수 5 → 해결 유저에게 알림 + 상태 변경
 
-### 2. `Post` – 제보 게시글
+### 관심 지역 설정
+- 지역 코드 기반 등록/삭제
+- 관심 지역에 새 글이 등록되면 자동 알림 제공
 
-| 필드명         | 타입           | 제약조건             | 설명                                 |
-|----------------|----------------|----------------------|--------------------------------------|
-| `id`           | BIGINT         | PK, AUTO_INCREMENT   | 게시글 고유 ID                        |
-| `user_id`      | BIGINT         | FK → User(id), NOT NULL | 작성자 ID                          |
-| `title`        | VARCHAR(100)   | NOT NULL             | 제목                                 |
-| `content`      | TEXT           | NOT NULL             | 본문 내용                            |
-| `image_url`    | VARCHAR(255)   | NULLABLE             | 이미지 URL                           |
-| `location_code`| VARCHAR(10)    | NOT NULL             | 지역 코드 (예: 1-2)                  |
-| `latitude`     | DOUBLE         | NULLABLE             | 위도                                 |
-| `longitude`    | DOUBLE         | NULLABLE             | 경도                                 |
-| `like_count`   | INT            | DEFAULT 0            | 공감 수                              |
-| `solve_count`  | INT            | DEFAULT 0            | 해결 수                              |
-| `status`       | TINYINT        | DEFAULT 0            | 이슈 상태 (0: 해결안됨, 1: 진행중, 2: 해결됨) |
-| `created_at`   | DATETIME       | DEFAULT CURRENT_TIMESTAMP | 작성 시간                      |
-
-
-
-### 3. `post_like` – 공감 기록
-
-| 필드명       | 타입       | 제약조건                      | 설명                             |
-|--------------|------------|-------------------------------|----------------------------------|
-| `id`         | BIGINT     | PK, AUTO_INCREMENT            | 공감 ID                          |
-| `user_id`    | BIGINT     | FK → User(id), NOT NULL       | 공감한 사용자                    |
-| `post_id`    | BIGINT     | FK → Post(id), NOT NULL       | 공감한 게시글                    |
-| `created_at` | DATETIME   | DEFAULT CURRENT_TIMESTAMP     | 공감 시각                        |
-
-
-
-### 4. `post_solve` – 해결 기록
-
-| 필드명       | 타입       | 제약조건                      | 설명                             |
-|--------------|------------|-------------------------------|----------------------------------|
-| `id`         | BIGINT     | PK, AUTO_INCREMENT            | 해결 ID                          |
-| `user_id`    | BIGINT     | FK → User(id), NOT NULL       | 해결한 사용자                    |
-| `post_id`    | BIGINT     | FK → Post(id), NOT NULL       | 해결된 게시글                    |
-| `created_at` | DATETIME   | DEFAULT CURRENT_TIMESTAMP     | 해결 시각                        |
-
-
-
-### 5. `post_summary` – 요약 데이터
-
-| 필드명              | 타입          | 제약조건                      | 설명                 |
-|---------------------|---------------|-------------------------------|----------------------|
-| `id`                | BIGINT        | PK, AUTO_INCREMENT            | 요약 데이터 ID       |
-| `post_id`           | BIGINT        | FK → Post(id), NOT NULL       | 대상 게시글 ID       |
-| `summarized_title`  | VARCHAR(100)  | NULLABLE                      | 요약된 제목          |
-| `summarized_content`| TEXT          | NULLABLE                      | 요약된 본문 내용     |
-
-
-
-### 6. `region` – 관심 지역 설정
-
-| 필드명        | 타입         | 제약조건                    | 설명                       |
-|---------------|--------------|-----------------------------|----------------------------|
-| `id`          | BIGINT       | PK, AUTO_INCREMENT          | 관심지역 ID                |
-| `user_id`     | BIGINT       | FK → User(id), NOT NULL     | 유저 ID                    |
-| `location_code`| VARCHAR(10) | NOT NULL                    | 지역 코드 (예: 1-4)        |
-
-
-
-### 7. `notification` – 알림 메시지
-
-| 필드명       | 타입         | 제약조건                    | 설명                       |
-|--------------|--------------|-----------------------------|----------------------------|
-| `id`         | BIGINT       | PK, AUTO_INCREMENT          | 알림 ID                    |
-| `user_id`    | BIGINT       | FK → User(id), NOT NULL     | 알림을 받을 유저 ID        |
-| `message`    | VARCHAR(255) | NOT NULL                    | 알림 메시지 내용           |
-| `created_at` | DATETIME     | DEFAULT CURRENT_TIMESTAMP   | 알림 생성 시각             |
+### 알림 기능
+- 공감/해결/관심지역 발생 시 자동 알림
+- 사용자별 알림 목록 조회
 
 ---
 
-## API 명세서
+## 스크린
 
-### Auth
-| 기능 | Method | Path | 설명 |
-|------|--------|------|------|
-| 로그인 | POST | `/auth/login` | 로그인 또는 자동 회원가입 처리 |
-| username 조회 | GET | `/auth/me/{userId}` | 사용자 기본 정보 조회 |
+---
 
-### Post
-| 기능 | Method | Path | 설명 |
-|-------|--------|------|------|
-| 게시글 등록 | POST | `/posts` | 제목, 내용, 사진, 위치, 상태 등 포함하여 등록 |
-| 게시글 전체 조회 | GET | `/posts` | 정렬, 검색, 지역 필터, 공감 여부 포함 전체 목록 |
-| 게시글 상세 조회 | GET | `/posts/{postId}` | ID + 사용자 기준 상세 정보 조회 |
-| 내가 쓴 글 조회 | GET | `/posts/mine` | 로그인 유저의 작성 게시글 |
-| 내가 공감한 글 조회 | GET | `/posts/liked` | 로그인 유저의 공감한 게시글 |
-| 미해결 글 통계 | GET | `/posts/stats/unsolved` | bigCategory별 미해결 수 |
-| 게시글 요약 조회 | GET | `/posts/{postId}/summary` | AI 요약 반환 (카드뉴스 용도) |
+## ⚙ 기술 스택
 
-### File
-| 기능 | Method | Path | 설명 |
-|-------|--------|------|------|
-| 이미지 업로드 | POST | `/files/upload` | 이미지 업로드 후 URL 반환 |
+| 분류        | 기술                         |
+|-------------|------------------------------|
+| Language    | Java 17                      |
+| Framework   | Spring Boot 3.x              |
+| ORM         | Spring Data JPA              |
+| DB          | MySQL 8                      |
+| Auth        | JWT, Spring Security         |
+| Infra       | AWS EC2, Docker, Nginx       |
+| Mail        | AWS SES                      |
+| AI 연동     | OpenAI GPT-4 (요약 기능)     |
+| 문서화      | Swagger (Springdoc OpenAPI)  |
 
-### Like
-| 기능 | Method | Path | 설명 |
-|-------|--------|------|------|
-| 좋아요 등록 | POST | `/likes` | 게시글에 공감 등록 |
-| 좋아요 취소 | DELETE | `/likes` | 공감 취소 |
-| 공감 여부 확인 | GET | `/likes/check` | 해당 게시글 공감 여부 확인 |
+---
 
-### Solve
-| 기능 | Method | Path | 설명 |
-|--------|--------|------|------|
-| 해결됨 등록 | POST | `/solve` | 해결 버튼 누름 |
-| 해결됨 취소 | DELETE | `/solve` | 해결 표시 취소 |
-| 해결 여부 확인 | GET | `/solve/check` | 해결 여부 확인 |
+## 🧾 ERD 요약
 
-### Notification
-| 기능 | Method | Path | 설명 |
-|-------------|--------|------------------------|-------------------------------|
-| 공지알림 목록 조회 | GET | `/notifications/{userId}` | 해당 유저의 알림 내역 전체 조회 |
+| 테이블 | 설명 |
+|--------|------|
+| `User`          | 사용자 정보 |
+| `Post`          | 제보 게시글 |
+| `post_like`     | 공감 기록 |
+| `post_solve`    | 해결 기록 |
+| `post_summary`  | GPT 요약 데이터 |
+| `region`        | 관심 지역 설정 |
+| `notification`  | 알림 메시지 |
 
-### Region
-| 기능 | Method | Path | 설명 |
-|-------------|--------|----------------------------|-------------------------------|
-| 관심 지역 등록 | POST | `/regions` | 관심 지역 코드 등록 |
-| 관심 지역 조회 | GET | `/regions/{userId}` | 유저 관심 지역 목록 반환 |
-| 관심 지역 삭제 | DELETE | `/regions/{userId}/{locationCode}` | 관심 지역 삭제 |
+※ 상세 필드는 Notion 또는 Schema 문서 참고
+
+---
+
+## 📁 디렉토리 구조
+```
+src/main/java/com/outline
+├── auth/             # 로그인 및 사용자 인증 관련 (자동 회원가입 포함)
+├── config/           # Spring Security, Swagger, CORS 등 글로벌 설정 파일
+├── email/            # 이메일 발송 서비스 (SES 연동 포함)
+├── file/             # 이미지 업로드 관련 로직
+├── like/             # 게시글 공감(Like) 기능
+├── notification/     # 알림(Notification) 전송 및 조회 처리
+├── post/             # 게시글 CRUD + 요약(PostSummary) 포함
+├── region/           # 사용자 관심지역 등록 및 알림 연동
+├── solve/            # 해결(Solve) 기능 및 상태 변경 처리
+├── user/             # 사용자 조회, 공감수/해결수 통계 등 유저 정보 관리
+```
+
+---
+
+## 📌 API 명세서
+
+| 기능 | Method | Endpoint |
+|------|--------|----------|
+| 로그인 / 회원가입 | POST | `/auth/login` |
+| 게시글 등록 | POST | `/posts` |
+| 게시글 전체 조회 | GET | `/posts` |
+| 게시글 요약 조회 | GET | `/posts/{postId}/summary` |
+| 공감 등록/취소 | POST / DELETE | `/likes` |
+| 해결 등록/취소 | POST / DELETE | `/solve` |
+| 관심지역 등록/조회 | POST / GET | `/regions` |
+| 알림 목록 조회 | GET | `/notifications/{userId}` |
+
+---
+
+## 🧪 실행 방법 (로컬)
+
+1. `.env` 또는 `application.yml` 설정
+   - DB, AWS, OpenAI, SES, CORS 설정
+2. Docker 설치
+3. `./gradlew build`
+4. `docker-compose up -d`
+5. Swagger 접속: `http://localhost:8080/swagger-ui/index.html`
+
+---
+
+## 👥 팀 정보
+
+**로컬프렌즈 10팀 - OUTLINE**  
+- 백엔드: 김태희
+- 프론트: 이소연
+- 기획: 임병준, 염상우
+- 디자인: 박요한, 유진
+
+---
+
+## 📌 배운 점 & 느낀 점
+
+- AI 요약 도입을 통한 GPT 실전 활용
+- 공감/해결/관심지역 기반 알림 설계로 UX 개선 경험
+- Docker + EC2 + GitHub Actions를 이용한 CI/CD 파이프라인 구축
+- 실시간 참여 기반 서비스에 필요한 도메인 분리 및 책임 설계 
 
 ---
 
 
-## 기술 스택
 
-- **Backend**: Java, Spring Boot
-- **DB**: MySQL 8
-- **Infra**: AWS EC2, Docker, Nginx
-- **API 명세**: Swagger
-- **AI**: OpenAI GPT-4 (요약)
-- **Email**: AWS SES  
