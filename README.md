@@ -44,6 +44,7 @@ AI 기반 요약 기능과 자동 알림 기능을 통해 사용자의 참여와
   <img src="./3.png" width="200"/>
   <img src="./4.png" width="200"/>
   <img src="./5.png" width="200"/>
+  <img src="./6.png" width="200"/>
 </p>
 
 
